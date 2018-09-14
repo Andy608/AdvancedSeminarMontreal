@@ -30,10 +30,14 @@ public class PlayerController : MonoBehaviour
 
     private void MovePlayer()
     {
-        velocity.x = Input.GetAxis(HORIZONTAL) * Time.deltaTime * moveSpeed;
-        velocity.y = Input.GetAxis(VERTICAL) * Time.deltaTime * moveSpeed;
+        velocity.x = Input.GetAxis(HORIZONTAL);
+        velocity.y = Input.GetAxis(VERTICAL);
 
-        transform.Translate(velocity);
+        //velocity.Normalize();
+
+        velocity *= Time.deltaTime * moveSpeed;
+
+        transform.Translate(velocity, Space.World);
     }
 
     private void RotatePlayer()
