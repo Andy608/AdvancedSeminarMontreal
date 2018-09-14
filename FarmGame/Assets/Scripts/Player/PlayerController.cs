@@ -7,37 +7,44 @@ public class PlayerController : MonoBehaviour
     private const string HORIZONTAL = "Horizontal";
     private const string VERTICAL = "Vertical";
 
-    private Vector2 velocity = new Vector2();
     private Vector3 lookDirection = new Vector2();
-
     private Vector3 mouseWorldPosition = new Vector3();
 
-    public float moveSpeed = 10.0f;
+    private Rigidbody2D playerRigidbody;
 
-    public float minimumMouseDistance = 0f;
+    public float moveSpeed = 10.0f;
+    public float movementSmoothing = 0.05f;
+
+    private Vector2 moveVelocity = new Vector2();
+    private Vector3 currentVelocity = Vector3.zero;
+
+    private void Awake()
+    {
+        playerRigidbody = GetComponent<Rigidbody2D>();
+    }
 
     private void Update()
     {
         UpdateLookDirection();
+        RotatePlayer();
+    }
 
-        if (!IsMouseTooClose())
-        {
-            RotatePlayer();
-        }
-
+    private void FixedUpdate()
+    {
         MovePlayer();
     }
 
     private void MovePlayer()
     {
-        velocity.x = Input.GetAxis(HORIZONTAL);
-        velocity.y = Input.GetAxis(VERTICAL);
+        moveVelocity.x = Input.GetAxisRaw(HORIZONTAL);
+        moveVelocity.y = Input.GetAxisRaw(VERTICAL);
+        moveVelocity.Normalize();
 
-        //velocity.Normalize();
+        moveVelocity *= moveSpeed * Time.fixedDeltaTime;
 
-        velocity *= Time.deltaTime * moveSpeed;
+        Vector3 targetVelocity = new Vector2(moveVelocity.x, moveVelocity.y);
 
-        transform.Translate(velocity, Space.World);
+        playerRigidbody.velocity = Vector3.SmoothDamp(playerRigidbody.velocity, targetVelocity, ref currentVelocity, movementSmoothing);
     }
 
     private void RotatePlayer()
@@ -51,10 +58,5 @@ public class PlayerController : MonoBehaviour
         mouseWorldPosition.z = 0;
 
         lookDirection = mouseWorldPosition - transform.position;
-    }
-
-    private bool IsMouseTooClose()
-    {
-        return lookDirection.sqrMagnitude <= minimumMouseDistance;
     }
 }
